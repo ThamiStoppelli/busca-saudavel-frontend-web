@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* .success-toast{
+  --toastify-color-light: #D6E2F5;
+  --toastify-color-success: #0C1B33;
+  --toastify-icon-color-success: var(--toastify-color-success);
+  --toastify-color-progress-success: var(--toastify-color-success);
+  --toastify-text-color-light: #0C1B33;
+}
+
+.error-toast{
+  --toastify-color-light: #FFC1C3;
+  --toastify-color-error: #F00F14;
+  --toastify-icon-color-error: var(--toastify-color-error);
+  --toastify-color-progress-error: var(--toastify-color-error);
+  --toastify-text-color-light: #0C1B33;
+} */
+
+.Toastify__toast-body {
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+}
+
+label {
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
