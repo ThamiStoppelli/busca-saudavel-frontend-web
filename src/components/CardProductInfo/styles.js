@@ -17,7 +17,7 @@ export const Container = styled.div`
 `;
 
 export const ContainerTitulo = styled.div`
-  display: flexbox;
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -54,7 +54,7 @@ export const ContainerTitulo = styled.div`
 `;
 
 export const ContainerConteudo = styled.div`
-  display: flexbox;
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -131,7 +131,7 @@ export const ContainerConteudo = styled.div`
 
 export const ContainerNutri = styled.div`
   margin-top: 2rem;
-  display: flexbox;
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -151,7 +151,7 @@ export const ContainerNutri = styled.div`
   }
 
   .nutri {
-    display: flexbox;
+    display: flex;
     flex-direction: row;
     align-items: center;
     width:21.313rem;
