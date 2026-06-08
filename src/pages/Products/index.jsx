@@ -33,8 +33,8 @@ const Products = () => {
   }
 
   useEffect(() => {
-    todosProdutos();
-  }, [produtos])
+    if (user?.name) todosProdutos();
+  }, [user?.name])
 
   const handleSetAddProduct = () => {
     setAddProduct(!showAddProduct);
