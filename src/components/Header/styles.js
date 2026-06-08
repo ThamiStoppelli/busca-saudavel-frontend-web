@@ -38,7 +38,7 @@ export const Content = styled.div`
   align-items: center;
   justify-content: space-between;
   color: #ffffff;
-  margin: 0rem 4rem 0rem 2.8rem;
+  margin: 0rem 3rem 0rem 3rem;
   padding: 1.2rem 0.4rem;
 
   .logo {
@@ -53,7 +53,7 @@ export const Content = styled.div`
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 1.2rem;
+    gap: 3rem;
     margin-left: -10%;
   }
 

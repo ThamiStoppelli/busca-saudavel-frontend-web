@@ -1,30 +1,23 @@
-import { Container, ContainerAtivo } from './styles'
+import { Container, ContainerAtivo } from './styles';
 
-function SmallTag({ id, dados, status, setStatus, selectedTags, setSelectedTags }){
-
-  function tornarDesativo(){
+function SmallTag({ id, dados, status, setStatus, selectedTags, setSelectedTags }) {
+  function tornarDesativo() {
     setStatus(false);
-    setSelectedTags(selectedTags.filter(tag => tag !== id));
+    setSelectedTags(selectedTags.filter((tag) => (tag._id || tag) !== id));
   }
 
-  function tornarAtivo(){
+  function tornarAtivo() {
     setStatus(true);
-    setSelectedTags([...selectedTags, id]);
+    setSelectedTags([...selectedTags, { _id: id, free_of: dados }]);
   }
 
-  return(
-    <>
-      {status === true? 
-        <ContainerAtivo onClick={() => tornarDesativo()}>
-          <span>{dados}</span>
-        </ContainerAtivo>
-      :
-        <Container onClick={() => tornarAtivo()}>
-          <span>{dados}</span>
-        </Container>
-      }
-    </>
-  )
+  const TagContainer = status === true ? ContainerAtivo : Container;
+
+  return (
+    <TagContainer type="button" onClick={() => (status === true ? tornarDesativo() : tornarAtivo())}>
+      <span>{dados}</span>
+    </TagContainer>
+  );
 }
-  
+
 export default SmallTag;

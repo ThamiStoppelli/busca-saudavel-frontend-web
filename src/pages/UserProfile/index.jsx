@@ -7,77 +7,105 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import semImagem from '../../assets/images/sem-imagem.png';
 import EditIcon from '../../assets/icons/edit.svg';
+import { getImageSource } from '../../utils/image';
 
-import { OuterContainer, Container, Content, ContainerNome, ContainerConteudo } from './styles';
+import {
+  OuterContainer,
+  Container,
+  Content,
+  ContainerNome,
+  ContainerConteudo
+} from './styles';
 
 const UserProfile = () => {
-  const { token, user, setUser, initialToken, userType } = useContext(AuthContext)
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState([]);
-  const [year, setYear] = useState('')
-  const [month, setMonth] = useState('')
-  const [day, setDay] = useState('')
+
+  const [userInfo, setUserInfo] = useState({});
 
   function getInfoPerfil() {
     api
       .get(`/user/get/${user._id}`)
       .then(res => {
-        setUserInfo(res.data)
-        setYear(res.data.birth_date.split('-')[0])
-        setMonth(res.data.birth_date.split('-')[1])
-        setDay(res.data.birth_date.split('-')[2].split('')[0] + res.data.birth_date.split('-')[2].split('')[1])
+        setUserInfo(res.data);
       })
       .catch(e => {
-        console.error(e.message)
-      })
+        console.error(e.message);
+      });
   }
 
   useEffect(() => {
     getInfoPerfil();
-    console.log(userInfo)
-  }, [])
+  }, []);
 
-  function RedirecionarEditar() {
-    navigate(`/perfil/editar`);
+  function formatBirthDate(date) {
+    if (!date) return 'Não informado';
+
+    const [year, month, day] = date.split('-');
+
+    if (!year || !month || !day) return date;
+
+    return `${day.slice(0, 2)}/${month}/${year}`;
+  }
+
+  function redirecionarEditar() {
+    navigate('/perfil/editar');
   }
 
   return (
     <>
       <Header />
+
       <OuterContainer>
         <Container>
           <ContainerNome>
-            <span style={{ width: '1rem' }} />
-            <img src={EditIcon} alt='editar' onClick={() => RedirecionarEditar(user._id)} />
+            <div>
+              <p>Meu perfil</p>
+              <span>Gerencie suas informações pessoais</span>
+            </div>
+
+            <button type="button" onClick={redirecionarEditar} aria-label="Editar perfil">
+              <img src={EditIcon} alt="" />
+              Editar
+            </button>
           </ContainerNome>
+
           <ContainerConteudo>
             <div className='containerImage'>
-              {userInfo.image ?
-                <img src={`data:image/png;base64,${userInfo.image}`} alt='' />
-                :
-                <img src={semImagem} alt='' />
-              }
+              <img
+                src={getImageSource(userInfo.image || userInfo.image_url, semImagem)}
+                alt={`Foto de perfil de ${userInfo.name || 'usuário'}`}
+              />
             </div>
+
             <Content>
-              <div>
-                <p className='bold'>Nome</p>
-                <p>{userInfo.name}</p>
-                <p className='bold'>E-mail</p>
-                <p>{userInfo.email}</p>
+              <div className="profileField">
+                <p className='label'>Nome</p>
+                <p className='value'>{userInfo.name || 'Não informado'}</p>
               </div>
-              <div>
-                <p className='bold'>Data de aniversário</p>
-                <p>{day}/{month}/{year}</p>
-                <p className='bold'>Cidade</p>
-                <p>{userInfo.location}</p>
+
+              <div className="profileField">
+                <p className='label'>E-mail</p>
+                <p className='value'>{userInfo.email || 'Não informado'}</p>
+              </div>
+
+              <div className="profileField">
+                <p className='label'>Data de aniversário</p>
+                <p className='value'>{formatBirthDate(userInfo.birth_date)}</p>
+              </div>
+
+              <div className="profileField">
+                <p className='label'>Cidade</p>
+                <p className='value'>{userInfo.location || 'Não informado'}</p>
               </div>
             </Content>
           </ContainerConteudo>
         </Container>
       </OuterContainer>
+
       <Footer />
     </>
-  )
-}
+  );
+};
 
 export default UserProfile;

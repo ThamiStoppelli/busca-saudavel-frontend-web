@@ -7,8 +7,7 @@ import { AuthContext } from '../../context/auth';
 import api from '../../services/api';
 import Tag from '../../components/Tag';
 import Voltar from '../../assets/icons/anterior-preto.svg';
-import semImagem from '../../assets/images/sem-imagem.png';
-import coracao from '../../assets/icons/not-favorited.png';
+import { getImageSource, fileToDataUrl } from '../../utils/image';
 import trash from '../../assets/icons/trash.svg';
 import { Container, Breadcrumb, ContainerProduto, ContainerNome, DadosProduto, DadosProdutoInfo, PrimeiraParte, SegundaParte, TerceiraParte, Botoes } from './styles'
 import { toast } from 'react-toastify';
@@ -21,7 +20,7 @@ const ProductEdit = () => {
   const [popUp, setPopUp] = useState(false);
   const [produto, setProduto] = useState();
   const [nome, setNome] = useState('');
-  const [image, setImage] = useState()
+  const [image, setImage] = useState('')
   const [ingredientes, setIngredientes] = useState('');
   const [descricao, setDescricao] = useState('');
   const [tags, setTags] = useState([]);
@@ -65,19 +64,21 @@ const ProductEdit = () => {
         setMinerais(res.data.nutrition_facts.minerals)
         setVitamina(res.data.nutrition_facts.vitamins)
         setTags(res.data.tags)
+        setImage(res.data.image_url || res.data.image || '')
       })
       .catch(e => {
         console.error(e.message)
       })
   }
 
-  function atualizar() {
+  async function atualizar() {
 
+    const imageData = image instanceof File ? await fileToDataUrl(image) : image;
     const formData = new FormData();
-    formData.append("image", image);
+    formData.append("image_url", imageData || "");
     formData.append("name", nome);
     formData.append("description", descricao);
-    //formData.append("tags", tags);
+    formData.append("tags", JSON.stringify(tags));
     formData.append("brand", user.name);
     formData.append("ingredients", ingredientes);
     formData.append("nutrition_facts", JSON.stringify({
@@ -102,7 +103,7 @@ const ProductEdit = () => {
         })
       .then(res => {
         toast.success('Produto alterado com sucesso')
-        const myTimeout = setTimeout(Redirecionar(res.data._id), 3000)
+        setTimeout(() => Redirecionar(res.data._id), 800)
       })
       .catch(e => {
         console.error(e.message)
@@ -115,7 +116,7 @@ const ProductEdit = () => {
     <>
       <Header />
       <Container>
-        {produto ? produto.brand == user.name ?
+        {produto ? produto.brand === user.name ?
           <>
             <Breadcrumb>
               <span className='textoCinza' onClick={() => { Redirecionar(produto._id) }}>Produtos</span>
@@ -132,16 +133,13 @@ const ProductEdit = () => {
                 <DadosProdutoInfo>
                   <PrimeiraParte>
                     <div className='containerImagem'>
-                      {produto.image ?
-                        <img src={`data:image/png;base64,${produto.image}`} alt='' className='foto' />
-                        : <img src={semImagem} alt='' className='foto' />
-                      }
+                      <img src={getImageSource({ ...produto, image_url: image instanceof File ? URL.createObjectURL(image) : image || produto.image_url })} alt={produto.name || 'Produto'} className='foto' />
                     </div>
                     <div className="info">
                       <input type="file" id="image"
                         onChange={(event) => {
-                          console.log(event.target.files[0])
-                          setImage(event.target.files[0]);
+                          const file = event.target.files[0];
+                          if (file) setImage(file);
                         }}
                       />
                     </div>

@@ -1,4 +1,4 @@
-const STORAGE_KEY = "busca_saudavel_mock_data_v2";
+const STORAGE_KEY = "busca_saudavel_mock_data_v3";
 
 const tags = [
   { _id: "tag-lactose", free_of: "Lactose" },
@@ -190,6 +190,14 @@ function parseNutrition(payload) {
   return value;
 }
 
+function getImageValue(payload) {
+  const imageUrl = getFormValue(payload, "image_url");
+  const image = getFormValue(payload, "image");
+  if (typeof imageUrl === "string" && imageUrl.startsWith("data:")) return imageUrl;
+  if (typeof image === "string" && image.startsWith("data:")) return image;
+  return "";
+}
+
 function parseTags(payload) {
   const value = getFormValue(payload, "tags");
   if (!value) return [];
@@ -298,6 +306,7 @@ const api = {
         brand: getFormValue(payload, "brand") || fallbackData.brand || "Fornecedor Demo",
         description: getFormValue(payload, "description") || fallbackData.description || "",
         ingredients: getFormValue(payload, "ingredients") || fallbackData.ingredients || "",
+        image_url: getImageValue(payload) || productImage(getFormValue(payload, "name") || fallbackData.name || "Produto"),
         image: "",
         createdAt: new Date().toISOString(),
         tags: parseTags(payload),
@@ -344,6 +353,7 @@ const api = {
           location: getFormValue(payload, "location") || data.users[index].location,
           crm_cnpj: getFormValue(payload, "crm_cnpj") || data.users[index].crm_cnpj,
           email: getFormValue(payload, "email") || data.users[index].email,
+          image: getImageValue(payload) || data.users[index].image,
         };
         saveData(data);
         return response(data.users[index]);
@@ -360,6 +370,9 @@ const api = {
           brand: getFormValue(payload, "brand") || data.products[index].brand,
           description: getFormValue(payload, "description") || data.products[index].description,
           ingredients: getFormValue(payload, "ingredients") || data.products[index].ingredients,
+          image_url: getImageValue(payload) || data.products[index].image_url,
+          image: "",
+          tags: parseTags(payload).length ? parseTags(payload) : data.products[index].tags,
           nutrition_facts: parseNutrition(payload),
         };
         saveData(data);

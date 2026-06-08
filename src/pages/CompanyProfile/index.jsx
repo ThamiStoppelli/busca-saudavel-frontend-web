@@ -6,7 +6,7 @@ import api from '../../services/api';
 import Header from '../../components/Header'
 import Footer from '../../components/Footer';
 import CompanyImage from '../../assets/icons/company-img.svg'
-import semImagem from '../../assets/images/sem-imagem.png';
+import { getImageSource } from '../../utils/image';
 import EditIcon from '../../assets/icons/edit.svg'
 
 import { OuterContainer, Container, Content, ContainerNome, ContainerConteudo } from './styles'
@@ -49,11 +49,7 @@ function CompanyProfile() {
                     </ContainerNome>
                     <ContainerConteudo>
                         <div className='containerImage'>
-                            {userInfo.image ?
-                                <img src={`data:image/png;base64,${userInfo.image}`} alt='' />
-                                :
-                                <img src={semImagem} alt='' />
-                            }
+                            <img src={getImageSource(userInfo)} alt={userInfo.name || 'Empresa'} />
                         </div>
                         <Content>
                             <p className='bold'>Nome do fornecedor</p>

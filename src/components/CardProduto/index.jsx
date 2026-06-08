@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/auth';
 import notFavorited from '../../assets/icons/not-favorited.png';
 import favorited from '../../assets/icons/favorited.svg';
-import semImagem from '../../assets/images/sem-imagem.png';
+import { getImageSource } from '../../utils/image';
 
 import { Container, ContainerImagem, ContainerInformacoes, Botao, TagsPreview } from './styles';
 
@@ -14,14 +14,6 @@ function CardProduto({ dados, clickFavorite, favorite }) {
 
   function Redirecionar(id) {
     navigate(`/produto/${id}`);
-  }
-
-  function getImageSource(product) {
-    if (!product) return semImagem;
-    if (product.image_url) return product.image_url;
-    if (product.image?.startsWith('data:') || product.image?.startsWith('http')) return product.image;
-    if (product.image) return `data:image/png;base64,${product.image}`;
-    return semImagem;
   }
 
   return dados ? (

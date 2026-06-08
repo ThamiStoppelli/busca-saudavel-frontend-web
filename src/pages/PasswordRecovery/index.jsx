@@ -1,98 +1,117 @@
-import { useRef, useState, useContext } from 'react';
+import { useRef, useState, useContext, useEffect } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import Header from '../../components/Header'
+import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { AuthContext } from '../../context/auth';
 import Loading from '../../components/Loading';
 import api from '../../services/api';
 
-import { Container, Content } from './styles'
-import { useEffect } from 'react';
+import { Container, Content } from './styles';
 
 function PasswordRecovery() {
+  const { setLoading, loading, recoveryEmail, setRecoveryEmail } = useContext(AuthContext);
+  const formRef = useRef(null);
+  const toastId = useRef(null);
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
-    const { setLoading, loading, recoveryEmail, setRecoveryEmail } = useContext(AuthContext);
-    const formRef = useRef(null);
-    const toastId = useRef(null)
-    const [email, setEmail] = useState("");
-    let navigate = useNavigate()
+  useEffect(() => {
+    setRecoveryEmail(email);
+  }, [email, setRecoveryEmail]);
 
-    useEffect(() => {
-        setRecoveryEmail(email);
-    }, [email])
+  async function HandleSubmit(field) {
+    field.preventDefault();
 
-    async function HandleSubmit(field) {
-        field.preventDefault()
+    setLoading(true);
 
-        setLoading(true);
+    api.post("/auth/forgot_password", {
+      email: email,
+    }).then(function (response) {
+      localStorage.setItem("recoveryEmail", recoveryEmail);
 
-        api.post("/auth/forgot_password", {
-            email: email,
-        }).then(function (response) {
-            
-            console.log(email)
-            localStorage.setItem("recoveryEmail", recoveryEmail);
-            console.log(recoveryEmail)
+      if (response.status === 200) {
+        setLoading(false);
+        navigate('/login');
+        toast.success("Caso este e-mail esteja cadastrado, cheque sua caixa de entrada");
+      }
+    }).catch(function (error) {
+      console.log(error.message);
+      setLoading(false);
 
+      if (error.message === "Network Error") {
+        if (!toast.isActive(toastId.current)) {
+          toastId.current = toast.error("Ocorreu um erro de conexão ao serviço");
+        }
+      } else {
+        setTimeout(() => navigate('/login'), 5000);
+        toast.error("Ocorreu um erro de conexão ao serviço");
+      }
+    });
+  }
 
-            if (response.status == 200) {
-                setLoading(false);
-                console.log(response)
-                navigate('/login')
-                toast.success("Caso este e-mail esteja cadastrado, cheque sua caixa de entrada");
-            }
+  return (
+    <div>
+      <Header />
 
-        }).catch(function (error) {
+      <Container>
+        <Content>
+          <div className="headerText">
+            <h1>Recuperação de senha</h1>
+            <p>
+              Informe seu e-mail cadastrado para receber as instruções de recuperação.
+            </p>
+          </div>
 
-            console.log(error.message);
+          <form onSubmit={HandleSubmit} ref={formRef}>
+            <div className="fieldGroup">
+              <label htmlFor="email">E-mail</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                maxLength={120}
+                onChange={(e) => setEmail(e.target.value)}
+                className="inputText"
+                required
+                placeholder="Digite seu e-mail"
+              />
+            </div>
 
-            if (error.message == "Network Error") {
-                setLoading(false);
-                console.log(error)
-                if (!toast.isActive(toastId.current)) {
-                    toastId.current = toast.error("Ocorreu um erro de conexão ao serviço");
-                }
+            {loading ? (
+              <button type="button" className="botao">
+                <Loading />
+              </button>
+            ) : (
+              <button type="submit" className="botao">
+                Enviar instruções
+              </button>
+            )}
+          </form>
 
-            } else {
-                setLoading(false);
-                const myTimeout = setTimeout(navigate('/login'), 5000)
-                toast.error("Ocorreu um erro de conexão ao serviço");
-            }
-        });
-    }
+          <div className="linksArea">
+            <p>
+              Lembrou da senha?{' '}
+              <NavLink to="/login" className={({ isActive }) => (isActive ? "active-link" : "link")}>
+                Entre aqui
+              </NavLink>
+            </p>
 
-    return (
-        <div>
-            <Header />
-            <Container>
-                <Content>
-                    <h1>Recuperação de senha</h1>
-                    <h4>Insira seu email cadastrado abaixo, para que possamos lhe enviar a instrução de recuperação de senha.</h4>
-                    <form onSubmit={HandleSubmit} ref={formRef}>
-                        <label htmlFor="email">E-mail</label>
-                        <input id="email" type="email" value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)} className='inputText' required
-                            placeholder="Digite seu e-mail" />
+            <p>
+              Já conhece todas as funcionalidades do Busca Saudável?{' '}
+              <NavLink to="/sobre" className={({ isActive }) => (isActive ? "active-link" : "link")}>
+                Saiba mais
+              </NavLink>
+            </p>
+          </div>
+        </Content>
+      </Container>
 
-                        {loading ?
-                            <button>
-                                <Loading />
-                            </button>
-                            :
-                            <input type="submit" value="Enviar" className='botao' />}
-                    </form>
-                    <label className='textoCadastro'>Lembrou da senha? <NavLink to="/login" className={({ isActive }) => (isActive ? "active-link" : "link")} ><u>Entre aqui!</u></NavLink></label>
-                    <label className='textoFuncionalidade'>Já conhece todas as funcionalidades do Busca Saudável? <NavLink
-                        to="/sobre" className={({ isActive }) => (isActive ? "active-link" : "link")}
-                    >
-                        <u>Saiba mais.</u></NavLink></label>
-                </Content>
-            </Container>
-            <Footer />
-        </div>
-    );
+      <Footer />
+    </div>
+  );
 }
 
 export default PasswordRecovery;

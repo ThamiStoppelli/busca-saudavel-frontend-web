@@ -185,7 +185,7 @@ const Home = () => {
       <Container>
         <section className="hero-search">
           <p className="eyebrow">Busca Saudável</p>
-          <h2>A plataforma para encontrar alimentos alinhados às suas escolhas nutricionais.</h2>
+          <h2>A plataforma para busca de alimentos alinhados às suas escolhas nutricionais</h2>
           <p className="subtitle">Pesquise por produto, marca ou selecione uma ou mais restrições alimentares.</p>
         </section>
 

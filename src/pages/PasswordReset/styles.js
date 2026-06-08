@@ -1,139 +1,143 @@
 import styled from 'styled-components';
 
-export const Container = styled.div` 
-  background-color: #F6F6F6;
-  padding: 4rem 4rem 6rem;
-  display: flex;
-  justify-content: center;
+const fieldStyles = `
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cfc9be;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #20201e;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  padding: 0.72rem 0.85rem;
 
-  @media only screen and (max-width: 1024px) {
-    padding: 4rem 2rem;
+  &:focus {
+    outline: none;
+    border-color: #7fa492;
+    box-shadow: 0 0 0 3px rgba(127, 164, 146, 0.18);
   }
 `;
 
-export const Content = styled.div` 
-  width: 37rem;
+export const Container = styled.div`
+  background-color: #f6f6f6;
+  padding: 4rem 2rem 6rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 560px) {
+    padding: 2rem 1rem 4rem;
+  }
+`;
+
+export const Content = styled.div`
+  width: 100%;
+  max-width: 34rem;
+  background: #ffffff;
+  border: 1px solid rgba(127, 164, 146, 0.4);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-sizing: border-box;
+  box-shadow: 0 1.25rem 3rem rgba(32, 32, 30, 0.08);
+
+  .headerText {
+    margin-bottom: 2rem;
+  }
 
   h1 {
     font-family: 'Palanquin', sans-serif;
     font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 4rem;
-    margin-top: 0;
-    width: 100%;
+    font-size: clamp(1.7rem, 4vw, 2rem);
+    line-height: 1.15;
+    margin: 0 0 0.75rem;
+    color: #3d3a35;
   }
 
-  h4 {
-    font-weight: 400;
-    margin-top: 0;
-    margin-bottom: 2rem;
-  }
-
-  label{
-    font-size: 16px;
-    font-weight: 400;
-    display: block;
-  }
-
-  input {
-    width: 37rem;
-    font-size: 16px;
-    margin: 0.5rem 0 1rem 0;
-  }
-
-  .inputText{
-    height: 3rem;
-    border: 2px solid #716E68;
-    border-radius: 0.5rem;
-  }
-
-  .botao {
-    height: 4rem;
-    background: #7FA492;
-    border: 2px solid #7FA492;
-    border-radius: 10px;
-    font-size: 1.563rem;
-    color:#FFFFFF;
-    margin-top: 4rem;
-    cursor: pointer;
-  }
-
-  .textoSenha {
-    text-align: end;
-    margin-top: 1.438rem;
+  .headerText p {
+    color: #716e68;
     font-size: 1rem;
-    cursor: pointer;
+    line-height: 1.45;
+    margin: 0;
   }
 
-  .textoCadastro {
-    text-align: center;
-    margin-top: 1.438rem;
-    font-size: 1rem;
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
-  .textoFuncionalidade {
-    text-align: center;
-    margin-top: 4.5rem;
-    font-size: 1rem;
+  .fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
   }
 
-  .link {
-    color: #000
+  label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #3d3a35;
   }
 
-  .active-link {
-    color: #000
+  .inputText {
+    ${fieldStyles}
   }
 
   .resend-email {
-    display: flex;
-    flex-direction: row;
+    display: inline-flex;
     align-items: center;
-    justify-content: left;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .resend-email img {
-    margin-top: 1.2rem;
+    width: 1rem;
+    height: 1rem;
   }
 
-  @media only screen and (max-width: 768px) {
-    width: 30rem;
-
-    input {
-      max-width: 30rem;
-    }
+  .botao {
+    width: 100%;
+    min-height: 3.2rem;
+    background: #7fa492;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
   }
 
-  @media only screen and (max-width: 590px) {
-    width: 25rem;
-
-    input {
-      max-width: 25rem;
-    }
+  .botao:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
   }
 
-  @media only screen and (max-width: 470px) {
-    width: 18rem;
+  .linksArea {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
 
-    input {
-      max-width: 18rem;
-    }
+  .linksArea p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #716e68;
+  }
 
-    h1 {
-      font-size: 1.5rem;
-    }
+  .link,
+  .active-link {
+    color: #527462;
+    font-weight: 700;
+    text-decoration: none;
+  }
 
-    .inputText{
-      height: 3rem;
-    }
+  .link:hover,
+  .active-link:hover {
+    text-decoration: underline;
+  }
 
-    .botao {
-      height: 3.5rem;
-      font-size: 1.3rem;
-    }
+  @media only screen and (max-width: 560px) {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
   }
 `;

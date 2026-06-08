@@ -7,7 +7,7 @@ import { AuthContext } from '../../context/auth';
 import api from '../../services/api';
 import Tag from '../../components/Tag';
 import Voltar from '../../assets/icons/anterior-preto.svg';
-import semImagem from '../../assets/images/sem-imagem.png';
+import { getImageSource } from '../../utils/image';
 import coracao from '../../assets/icons/not-favorited.png';
 import trash from '../../assets/icons/trash.svg';
 import edit from '../../assets/icons/edit.svg';
@@ -54,7 +54,7 @@ const Product = () => {
               <ContainerNome>
                 <span />
                 <h3>{produto.name}</h3>
-                { user? user.name == produto.brand ? 
+                { user? user.name === produto.brand ? 
                   <div>
                     <img src={edit} alt='Editar' onClick={() => Redirecionar(produto._id)}/>
                     <img src={trash} alt='Deletar' onClick={() => { setPopUp(true) }}/>
@@ -66,11 +66,8 @@ const Product = () => {
                 <DadosProdutoInfo>
                   <PrimeiraParte>
                     <div className='containerImagem'>
-                      {  produto.image ? 
-                        <img src={`data:image/png;base64,${produto.image}`} alt='' className='foto'/>
-                        :  <img src={semImagem} alt='' className='foto'/>
-                      }
-                      { userType == 1 ? null : 
+                      <img src={getImageSource(produto)} alt={produto.name || 'Produto'} className='foto'/>
+                      { userType === 1 ? null : 
                       <img src={coracao} alt='favoritar' className='icon' />}
                     </div>
                     <p>Não contém:</p>

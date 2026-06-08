@@ -15,12 +15,6 @@ const Products = () => {
   const [pesquisa, setPesquisa] = useState("");
   const [showAddProduct, setAddProduct] = useState(false);
 
-  function buscarProdutos(event, pesquisa) {
-    if (event.key === 'Enter') {
-      todosProdutos();
-    }
-  }
-
   function todosProdutos() {
     api
       .get(`/product/search_in_brand?brand=${user.name}&search=${pesquisa}`)
@@ -33,8 +27,10 @@ const Products = () => {
   }
 
   useEffect(() => {
-    if (user?.name) todosProdutos();
-  }, [user?.name])
+    if (!user?.name) return;
+    const timeout = setTimeout(() => todosProdutos(), 250);
+    return () => clearTimeout(timeout);
+  }, [user?.name, pesquisa])
 
   const handleSetAddProduct = () => {
     setAddProduct(!showAddProduct);
@@ -48,7 +44,7 @@ const Products = () => {
         {user ?
           <>
             <ContainerBusca>
-              <input type="text" value={pesquisa} onKeyUp={(e) => buscarProdutos(e, pesquisa)} onChange={(e) => setPesquisa(e.target.value)} placeholder="Busque pelo nome do produto" />
+              <input type="text" value={pesquisa} onChange={(e) => setPesquisa(e.target.value)} placeholder="Busque pelo nome do produto" />
               <div onClick={handleSetAddProduct}>
                 <img src={Plus} alt="" />
                 <p>Cadastrar produto</p>

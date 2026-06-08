@@ -8,7 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from '../../context/auth';
 import api from '../../services/api';
 import EditIcon from '../../assets/icons/edit.svg'
-import semImagem from '../../assets/images/sem-imagem.png';
+import { getImageSource, fileToDataUrl } from '../../utils/image';
 
 import { OuterContainer, Container, Content, ContainerNome, ContainerConteudo, Botoes } from './styles'
 
@@ -43,12 +43,13 @@ const CompanyProfileEdit = () => {
     getInfoPerfil();
   }, [])
 
-  function atualizar() {
+  async function atualizar() {
+    const imageData = image instanceof File ? await fileToDataUrl(image) : image;
     const formData = new FormData();
     formData.append("name", name);
     formData.append("crm_cnpj", CNPJ);
     formData.append("email", email);
-    formData.append("image", image);
+    formData.append("image", imageData || "");
     api
       .put(`/user/update/${user._id}`,
         formData,
@@ -59,7 +60,7 @@ const CompanyProfileEdit = () => {
         })
       .then(res => {
         toast.success('Perfil editado com sucesso')
-        const myTimeout = setTimeout(navigate('/perfilempresa'), 3000)
+        setTimeout(() => navigate('/perfilempresa'), 800)
       })
       .catch(e => {
         console.log(e.message)
@@ -81,16 +82,12 @@ const CompanyProfileEdit = () => {
             <div className="image-div">
 
               <div className='containerImage'>
-                {image ?
-                  <img src={`data:image/png;base64,${image}`} alt='' />
-                  :
-                  <img src={semImagem} alt='' />
-                }
+                <img src={getImageSource({ image_url: image instanceof File ? URL.createObjectURL(image) : image })} alt={name || 'Empresa'} />
               </div>
               <input type="file" id="image" className='image-input'
                 onChange={(event) => {
-                  console.log(event.target.files[0])
-                  setImage(event.target.files[0]);
+                  const file = event.target.files[0];
+                  if (file) setImage(file);
                 }}
               />
             </div>

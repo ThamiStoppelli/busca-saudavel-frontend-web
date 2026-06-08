@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PopUpDeletarProduto from '../PopUpDeletarProduto';
-import Tag from '../../components/Tag';
-import Trash from '../../assets/icons/trash.svg';
 import Edit from '../../assets/icons/edit.svg';
-import semImagem from '../../assets/images/sem-imagem.png';
+import Trash from '../../assets/icons/trash.svg';
+import { getImageSource } from '../../utils/image';
 
-import { Container, ContainerNome, ContainerConteudo, Content, ContainerTag } from './styles'
+import { Container, ProductImage, Content, HeaderRow, MetaGrid, TagsPreview, Actions } from './styles';
+
+function formatDate(value) {
+  if (!value) return 'Data não informada';
+  return new Intl.DateTimeFormat('pt-BR').format(new Date(value));
+}
 
 function CardProdutoFornecedor({ dados }) {
   const navigate = useNavigate();
@@ -21,50 +25,53 @@ function CardProdutoFornecedor({ dados }) {
     navigate(`/produto/editar/${id}`);
   }
 
-  useEffect(() => {
-    console.log(dados.tags)
-  }, [])
-
   return (
     <>
       <Container>
-        <ContainerNome>
-          <span style={{ width: '1rem' }} />
-          <p onClick={() => { Redirecionar(dados._id) }}>{dados.name}</p>
-          <div>
-            <img src={Edit} alt='editar' onClick={() => RedirecionarEditar(dados._id)} />
-            <img src={Trash} alt='deletar' onClick={() => { setPopUp(true) }} />
-          </div>
-        </ContainerNome>
-        <ContainerConteudo>
-          <div className='containerImage'>
-            {dados.image ?
-              <img src={`data:image/png;base64,${dados.image}`} alt='' onClick={() => { Redirecionar(dados._id) }} />
-              :
-              <img src={semImagem} alt='' />
-            }
-          </div>
-          <Content>
-            <p className='bold'>Marca</p>
-            <p>{dados.brand}</p>
-            <p className='bold'>Data de Cadastro</p>
-            <p>{dados.createdAt.split('-')[2].split('')[0] + dados.createdAt.split('-')[2].split('')[1]}/{dados.createdAt.split('-')[1]}/{dados.createdAt.split('-')[0]}</p>
-            <p className='bold'>Tags</p>
-            <ContainerTag>
-              {dados.tags ? dados.tags.map(tag => {
-                return (
-                  <Tag dados={tag.free_of} status='false' />
-                )
-              }) : null}
-            </ContainerTag>
-          </Content>
-        </ContainerConteudo>
+        <ProductImage onClick={() => Redirecionar(dados._id)}>
+          <img src={getImageSource(dados)} alt={dados.name || 'Produto'} />
+        </ProductImage>
+
+        <Content>
+          <HeaderRow>
+            <div>
+              <p className="eyebrow">Produto cadastrado</p>
+              <h3 onClick={() => Redirecionar(dados._id)}>{dados.name}</h3>
+            </div>
+            <Actions>
+              <button type="button" onClick={() => RedirecionarEditar(dados._id)} aria-label="Editar produto">
+                <img src={Edit} alt="" />
+              </button>
+              <button type="button" onClick={() => setPopUp(true)} aria-label="Deletar produto">
+                <img src={Trash} alt="" />
+              </button>
+            </Actions>
+          </HeaderRow>
+
+          <MetaGrid>
+            <div>
+              <span>Marca</span>
+              <strong>{dados.brand}</strong>
+            </div>
+            <div>
+              <span>Cadastro</span>
+              <strong>{formatDate(dados.createdAt)}</strong>
+            </div>
+          </MetaGrid>
+
+          <TagsPreview>
+            {(dados.tags || []).slice(0, 4).map((tag) => (
+              <span key={tag._id || tag.free_of}>{tag.free_of}</span>
+            ))}
+            {(dados.tags || []).length > 4 ? <span>+{dados.tags.length - 4}</span> : null}
+          </TagsPreview>
+        </Content>
       </Container>
-      {popUp ?
+      {popUp ? (
         <PopUpDeletarProduto status={popUp} setStatus={setPopUp} id={dados._id} nome={dados.name} />
-        : null}
+      ) : null}
     </>
-  )
+  );
 }
 
 export default CardProdutoFornecedor;

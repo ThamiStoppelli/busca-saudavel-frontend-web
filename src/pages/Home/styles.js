@@ -27,7 +27,7 @@ export const Container = styled.main`
   h2 {
     margin: 0;
     color: #3d3a35;
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2rem, 4vw, 2.5rem);
     line-height: 1.1;
     font-weight: 700;
     letter-spacing: -0.03em;
