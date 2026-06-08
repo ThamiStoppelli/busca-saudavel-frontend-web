@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 
 import { AuthContext } from '../../context/auth';
 import api from '../../services/api';
@@ -8,183 +8,245 @@ import Tag from '../../components/Tag';
 import CardProduto from '../../components/CardProduto';
 import Paginacao from '../../components/Paginacao';
 import ModalLogin from '../../components/ModalLogin';
-import notFavorited from '../../assets/icons/not-favorited.png';
-import favorited from '../../assets/icons/favorited.svg';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Container, ContainerBusca, ContainerTags, ContainerProdutos, ContainerPaginacao, BotaoTag } from './styles'
+import {
+  Container,
+  ContainerBusca,
+  ContainerTags,
+  ContainerProdutos,
+  ContainerPaginacao,
+  SearchSummary,
+  EmptyState,
+} from './styles';
+
+const tagConfig = [
+  { key: 'lactose', label: 'Lactose', ref: 'ref_1' },
+  { key: 'amendoim', label: 'Amendoim', ref: 'ref_2' },
+  { key: 'gluten', label: 'Glúten', ref: 'ref_3' },
+  { key: 'acucar', label: 'Açúcar', ref: 'ref_4' },
+  { key: 'mariscos', label: 'Mariscos', ref: 'ref_5' },
+  { key: 'ovo', label: 'Ovo', ref: 'ref_6' },
+  { key: 'origemAnimal', label: 'Origem Animal', ref: 'ref_7' },
+];
+
+const initialTags = tagConfig.reduce((acc, tag) => ({ ...acc, [tag.key]: false }), {});
 
 const Home = () => {
+  const { token, user, userType } = useContext(AuthContext);
 
-  const { token, user, initialToken, userType, logout } = useContext(AuthContext)
-
-  const [pesquisa, setPesquisa] = useState("");
-  const [lactoseAtivo, setLactoseAtivo] = useState(false);
-  const [amendoimAtivo, setAmendoimAtivo] = useState(false);
-  const [glutenAtivo, setGlutenAtivo] = useState(false);
-  const [acucarAtivo, setAcucarAtivo] = useState(false);
-  const [mariscosAtivo, setMariscosAtivo] = useState(false);
-  const [ovoAtivo, setOvoAtivo] = useState(false);
-  const [origemAnimalAtivo, setOrigemAnimalAtivo] = useState(false);
+  const [pesquisa, setPesquisa] = useState('');
+  const [activeTags, setActiveTags] = useState(initialTags);
   const [produtos, setProdutos] = useState([]);
   const [showModalLogin, setModalLogin] = useState(false);
-
-  const [paginaAtual, setPaginaAtual] = useState(1)
+  const [paginaAtual, setPaginaAtual] = useState(1);
   const [qtdItensPagina] = useState(8);
+  const [favoritedProducts, setFavoritedProducts] = useState({});
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
+  const selectedTags = useMemo(
+    () => tagConfig.filter((tag) => activeTags[tag.key]),
+    [activeTags]
+  );
+
   const indexOfLastRecord = paginaAtual * qtdItensPagina;
   const indexOfFirstRecord = indexOfLastRecord - qtdItensPagina;
   const currentProducts = produtos.slice(indexOfFirstRecord, indexOfLastRecord);
   const nPages = Math.ceil(produtos.length / qtdItensPagina);
-  const [favoritedProducts, setFavoritedProducts] = useState({});
 
+  const toggleTag = (key) => {
+    setActiveTags((current) => ({ ...current, [key]: !current[key] }));
+  };
 
-  function buscarProdutos(event, pesquisa) {
-    if (event.key === 'Enter') {
-      todosProdutos();
-      //buscarTags();
-    }
-  }
+  const normalizeText = (text) => (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  function buscarTags() {
+  const filterBySearch = (products, searchTerm) => {
+    const normalizedSearch = normalizeText(searchTerm);
+    if (!normalizedSearch) return products;
+
+    return products.filter((product) =>
+      normalizeText([
+        product.name,
+        product.brand,
+        product.description,
+        product.ingredients,
+      ].join(' ')).includes(normalizedSearch)
+    );
+  };
+
+  function fetchProducts() {
+    setLoadingProducts(true);
+
+    const hasSelectedTags = selectedTags.length > 0;
+    const tagQuery = tagConfig
+      .map((tag) => `${tag.ref}=${activeTags[tag.key]}`)
+      .join('&');
+
+    const endpoint = hasSelectedTags
+      ? `/product/search_by_tag?${tagQuery}&`
+      : `/product/search?search=${pesquisa}`;
+
     api
-      .get(`/product/search_by_tag?ref_1=${lactoseAtivo}&ref_2=${amendoimAtivo}&ref_3=${glutenAtivo}&ref_4=${acucarAtivo}&ref_5=${mariscosAtivo}&ref_6=${ovoAtivo}&ref_7=${origemAnimalAtivo}&`)
-      .then(res => {
-        setProdutos(res.data)
+      .get(endpoint)
+      .then((res) => {
+        const products = hasSelectedTags ? filterBySearch(res.data, pesquisa) : res.data;
+        setProdutos(products);
+        setPaginaAtual(1);
       })
-      .catch(e => {
-        console.error(e.message)
+      .catch((e) => {
+        console.error(e.message);
       })
-  }
-
-  function todosProdutos() {
-    api
-      .get(`/product/search?search=${pesquisa}`)
-      .then(res => {
-        setProdutos(res.data)
-      })
-      .catch(e => {
-        console.error(e.message)
-      })
+      .finally(() => setLoadingProducts(false));
   }
 
   function todosFavoritos() {
+    if (!user?._id) return;
+
     api
       .get(`/user/get_favorite_products/${user._id}`, {
         headers: {
-          "Authorization": `Bearer ${token}`,
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then(res => {
-        res.data.map(produto => {
-          setFavoritedProducts((prevState) => ({
-            ...prevState,
-            [produto._id]: true,
-          }));
-        })
-        console.log(favoritedProducts)
+      .then((res) => {
+        const favorites = {};
+        res.data.forEach((produto) => {
+          favorites[produto._id] = true;
+        });
+        setFavoritedProducts(favorites);
       })
-      .catch(e => {
-        console.error(e.message)
-      })
+      .catch((e) => {
+        console.error(e.message);
+      });
   }
 
   useEffect(() => {
-    todosProdutos();
-    console.log(userType)
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [pesquisa, activeTags]);
+
+  useEffect(() => {
     if (token) todosFavoritos();
-
-
-  }, [])
+  }, [token, user?._id]);
 
   const handleSetModalLogin = () => {
     setModalLogin(!showModalLogin);
   };
 
   function handleFavorite(produtoId) {
-    if (userType == 0 || userType == 2) {
+    if (userType === 0 || userType === 2) {
       if (favoritedProducts[produtoId]) {
-        api.put(
+        api
+          .put(
             `/user/remove_favorite_product/${user._id}`,
             { product_id: produtoId },
             { headers: { Authorization: `Bearer ${token}` } }
-          ).then((res) => {
-            console.log(res.data);
+          )
+          .then(() => {
             toast.success('Produto removido dos favoritos com sucesso');
             setFavoritedProducts((prevState) => ({
               ...prevState,
               [produtoId]: false,
             }));
-          }).catch((err) => {
+          })
+          .catch((err) => {
             console.log(err.msg);
           });
       } else {
-        api.put(
+        api
+          .put(
             `/user/add_favorite_product/${user._id}`,
             { product_id: produtoId },
             { headers: { Authorization: `Bearer ${token}` } }
-          ).then((res) => {
-            console.log(res.data);
+          )
+          .then(() => {
             toast.success('Produto adicionado aos favoritos com sucesso');
             setFavoritedProducts((prevState) => ({
               ...prevState,
               [produtoId]: true,
             }));
-          }).catch((err) => {
+          })
+          .catch((err) => {
             console.log(err.msg);
           });
-      } 
+      }
     } else {
       handleSetModalLogin();
-    } }
+    }
+  }
 
-    return (
-      <>
-        <Header />
-        <Container>
-          <h2> A plataforma de busca para <br />facilitar suas escolhas nutricionais.</h2>
-          <ContainerBusca>
-            <input type="text" value={pesquisa} onKeyUp={(e) => buscarProdutos(e, pesquisa)} onChange={(e) => setPesquisa(e.target.value)} placeholder="Busque pelo nome ou marca do produto" />
-            <ContainerTags>
-              <Tag dados="Lactose" status={lactoseAtivo} setStatus={setLactoseAtivo} />
-              <Tag dados="Amendoim" status={amendoimAtivo} setStatus={setAmendoimAtivo} />
-              <Tag dados="Glúten" status={glutenAtivo} setStatus={setGlutenAtivo} />
-              <Tag dados="Açúcar" status={acucarAtivo} setStatus={setAcucarAtivo} />
-              <Tag dados="Mariscos" status={mariscosAtivo} setStatus={setMariscosAtivo} />
-              <Tag dados="Ovo" status={ovoAtivo} setStatus={setOvoAtivo} />
-              <Tag dados="Origem Animal" status={origemAnimalAtivo} setStatus={setOrigemAnimalAtivo} />
-              <BotaoTag onClick={() => buscarTags()}><span>Buscar por Tag's</span></BotaoTag>
-            </ContainerTags>
-          </ContainerBusca>
-          <p id="pontoChave">Produtos com: {pesquisa}</p>
+  return (
+    <>
+      <Header />
+      <Container>
+        <section className="hero-search">
+          <p className="eyebrow">Busca Saudável</p>
+          <h2>A plataforma para encontrar alimentos alinhados às suas escolhas nutricionais.</h2>
+          <p className="subtitle">Pesquise por produto, marca ou selecione uma ou mais restrições alimentares.</p>
+        </section>
+
+        <ContainerBusca>
+          <input
+            type="text"
+            value={pesquisa}
+            onChange={(e) => setPesquisa(e.target.value)}
+            placeholder="Busque pelo nome, marca ou ingrediente"
+            aria-label="Buscar produtos"
+          />
+          <ContainerTags aria-label="Filtros por restrição alimentar">
+            {tagConfig.map((tag) => (
+              <Tag
+                key={tag.key}
+                dados={tag.label}
+                status={activeTags[tag.key]}
+                setStatus={() => toggleTag(tag.key)}
+              />
+            ))}
+          </ContainerTags>
+        </ContainerBusca>
+
+        <SearchSummary id="pontoChave">
+          <strong>{produtos.length}</strong> produto{produtos.length === 1 ? '' : 's'} encontrado{produtos.length === 1 ? '' : 's'}
+          {pesquisa ? <> para “{pesquisa}”</> : null}
+          {selectedTags.length ? <> com {selectedTags.map((tag) => tag.label).join(', ')}</> : null}
+        </SearchSummary>
+
+        {loadingProducts ? (
+          <EmptyState>Carregando produtos...</EmptyState>
+        ) : produtos.length ? (
           <ContainerProdutos>
-            {currentProducts ? currentProducts.map(produto => {
-              return (
-                <CardProduto
-                  key={produto._id}
-                  dados={produto}
-                  clickFavorite={() => handleFavorite(produto._id)}
-                  favorite={favoritedProducts[produto._id] || false}
-                //checar se usuario esta logado
-                />
-              )
-            }) : null}
+            {currentProducts.map((produto) => (
+              <CardProduto
+                key={produto._id}
+                dados={produto}
+                clickFavorite={() => handleFavorite(produto._id)}
+                favorite={favoritedProducts[produto._id] || false}
+              />
+            ))}
           </ContainerProdutos>
+        ) : (
+          <EmptyState>Nenhum produto encontrado. Tente remover filtros ou buscar por outro termo.</EmptyState>
+        )}
+
+        {nPages > 1 ? (
           <ContainerPaginacao>
             <Paginacao
               nPages={nPages}
               paginaAtual={paginaAtual}
-              setPaginaAtual={setPaginaAtual} />
-          </ContainerPaginacao>
-          {showModalLogin && (
-            <ModalLogin
-              onClick={handleSetModalLogin}
+              setPaginaAtual={setPaginaAtual}
             />
-          )}
-        </Container>
-        <Footer />
-      </>
-    )
-  }
+          </ContainerPaginacao>
+        ) : null}
 
-  export default Home;
+        {showModalLogin && <ModalLogin onClick={handleSetModalLogin} />}
+      </Container>
+      <Footer />
+    </>
+  );
+};
+
+export default Home;

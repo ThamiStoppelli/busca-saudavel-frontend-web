@@ -1,4 +1,4 @@
-const STORAGE_KEY = "busca_saudavel_mock_data";
+const STORAGE_KEY = "busca_saudavel_mock_data_v2";
 
 const tags = [
   { _id: "tag-lactose", free_of: "Lactose" },
@@ -9,6 +9,24 @@ const tags = [
   { _id: "tag-ovo", free_of: "Ovo" },
   { _id: "tag-origem-animal", free_of: "Origem Animal" },
 ];
+
+
+function productImage(label, accent = "#7FA492", background = "#EEF5EF") {
+  const safeLabel = String(label).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+      <rect width="480" height="360" rx="34" fill="${background}"/>
+      <circle cx="374" cy="72" r="58" fill="#ffffff" opacity="0.72"/>
+      <circle cx="86" cy="285" r="70" fill="#ffffff" opacity="0.62"/>
+      <rect x="132" y="82" width="216" height="196" rx="30" fill="#ffffff" stroke="#E2DED6" stroke-width="4"/>
+      <rect x="158" y="114" width="164" height="44" rx="22" fill="${accent}" opacity="0.18"/>
+      <rect x="158" y="179" width="164" height="18" rx="9" fill="#D9D5CC"/>
+      <rect x="158" y="211" width="108" height="18" rx="9" fill="#D9D5CC" opacity="0.75"/>
+      <circle cx="240" cy="136" r="20" fill="${accent}"/>
+      <text x="240" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#3D3A35">${safeLabel}</text>
+    </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
 
 const nutrition = {
   serving_size: "30 g",
@@ -53,6 +71,7 @@ const initialData = {
     {
       _id: "produto-1",
       name: "Granola Integral Sem Glúten",
+      image_url: productImage("Granola", "#7FA492"),
       brand: "Nature Foods",
       description: "Granola crocante com aveia sem glúten, castanhas e sementes.",
       ingredients: "Aveia sem glúten, castanha-de-caju, semente de girassol, coco e melado.",
@@ -65,6 +84,7 @@ const initialData = {
     {
       _id: "produto-2",
       name: "Bebida Vegetal de Amêndoas",
+      image_url: productImage("Bebida vegetal", "#9ABFA8"),
       brand: "Vida Plant",
       description: "Bebida vegetal leve para receitas, café ou consumo diário.",
       ingredients: "Água, amêndoas, cálcio, sal marinho e estabilizante natural.",
@@ -77,6 +97,7 @@ const initialData = {
     {
       _id: "produto-3",
       name: "Cookie Proteico Sem Açúcar",
+      image_url: productImage("Cookie", "#C0DCCC"),
       brand: "Fit Bites",
       description: "Cookie com alto teor de proteína e sem adição de açúcar.",
       ingredients: "Farinha de amêndoas, proteína vegetal, cacau, óleo de coco e adoçante natural.",
@@ -89,6 +110,7 @@ const initialData = {
     {
       _id: "produto-4",
       name: "Macarrão de Arroz Integral",
+      image_url: productImage("Macarrão", "#8CA89A"),
       brand: "Nature Foods",
       description: "Massa simples, sem glúten, feita com arroz integral.",
       ingredients: "Farinha de arroz integral e água.",
@@ -101,6 +123,7 @@ const initialData = {
     {
       _id: "produto-5",
       name: "Iogurte Natural Zero Lactose",
+      image_url: productImage("Iogurte", "#A8C8B6"),
       brand: "Leve Campo",
       description: "Iogurte natural com textura cremosa e sem lactose.",
       ingredients: "Leite pasteurizado sem lactose e fermentos lácteos.",
@@ -113,6 +136,7 @@ const initialData = {
     {
       _id: "produto-6",
       name: "Mix de Castanhas Sem Sal",
+      image_url: productImage("Castanhas", "#789987"),
       brand: "Fit Bites",
       description: "Mix de oleaginosas sem sal e sem açúcar adicionado.",
       ingredients: "Castanha-de-caju, castanha-do-pará, amêndoas e nozes.",

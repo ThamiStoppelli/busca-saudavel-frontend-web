@@ -1,28 +1,25 @@
-import { Container, ContainerAtivo } from './styles'
+import { Container } from './styles';
 
-function Tag({ dados, status, setStatus }){
+function Tag({ dados, status, setStatus }) {
+  const isActive = status === true || status === 'true';
 
-  function tornarDesativo(){
-    setStatus(false);
+  function handleClick() {
+    if (typeof setStatus === 'function') {
+      setStatus(!isActive);
+    }
   }
 
-  function tornarAtivo(){
-    setStatus(true);
-  }
-
-  return(
-    <>
-      {status === true? 
-        <ContainerAtivo onClick={() => tornarDesativo()}>
-          <span>{dados}</span>
-        </ContainerAtivo>
-      :
-        <Container onClick={() => tornarAtivo()}>
-          <span>{dados}</span>
-        </Container>
-      }
-    </>
-  )
+  return (
+    <Container
+      type="button"
+      onClick={handleClick}
+      $active={isActive}
+      aria-pressed={isActive}
+      disabled={typeof setStatus !== 'function'}
+    >
+      {dados}
+    </Container>
+  );
 }
   
 export default Tag;
